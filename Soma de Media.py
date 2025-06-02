@@ -5,9 +5,11 @@ nota1 = float(input("Nota 1: "))
 nota2 = float(input("Nota 2: "))
 nota3 = float(input("Nota 3: "))
 notafinal = (nota1 + nota2 + nota3) / 3
-if(notafinal >= 7):
+if(notafinal >= 7 and notafinal < 10):
    print("Aluno se chama ", nome, " e sua idade é ", idade, ",e está Aprovado com nota %.2f" % notafinal)
-elif(notafinal < 5):
+elif(notafinal > 0 and notafinal < 5):
      print("Aluno se chama ", nome, " e sua idade é ", idade, " ,e está Reprovado com nota %.2f" % notafinal)
 elif(notafinal >= 5 and notafinal < 7):
      print("Aluno se chama ", nome, " e sua idade é ", idade, " ,e está de Recuperação com nota %.2f" % notafinal)
+else:
+    print("Erro no sistema, entre em contato com o suporte. Saiba mais.")

@@ -12,9 +12,8 @@ from selenium.webdriver.common.keys import Keys
 import time
 
 driver = webdriver.Chrome()
-driver.get("https://www.google.com")
+driver.get("renova-tech.vercel.app")
 time.sleep(2)
-caixa_pesquisa = driver.find_element(By.NAME, "q")
 caixa_pesquisa.send_keys("Selenium Python")
 caixa_pesquisa.send_keys(Keys.RETURN)
 time.sleep(5)

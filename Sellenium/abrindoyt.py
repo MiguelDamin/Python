@@ -12,7 +12,7 @@ time.sleep(3)  # Espera a página carregar
 
 # 2. Encontrar a barra de pesquisa e digitar um termo
 search_box = driver.find_element(By.NAME, "search_query")
-search_box.send_keys("surf 4k relax")
+search_box.send_keys("Austria paisagens")
 search_box.send_keys(Keys.RETURN)
 time.sleep(3)
 

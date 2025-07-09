@@ -1,3 +1,8 @@
+import pyfiglet
+from rich.console import Console
+from tabulate import tabulate
+from colorama import init, Fore, Style
+init(autoreset=True)
 import mysql.connector
 
 conexao = mysql.connector.connect(
@@ -8,7 +13,7 @@ conexao = mysql.connector.connect(
   )
 
 cursor = conexao.cursor()
-escolha = int(input("____________________________________1-CADASTRAR NOVOS CLIENTES, 2-LISTAR, 3-REMOVER________________________________________ \n Selecione a Opção: "))
+escolha = int(input(Fore.GREEN + "--------------> 1-CADASTRAR NOVOS CLIENTES, 2-LISTAR, 3-REMOVER <-------------- \n" + Fore.WHITE + "Selecione a Opção: "))
 
 if escolha == 1:
     nomePesquisado = input("NOME DO COMPLETO DO CLIENTE: ")

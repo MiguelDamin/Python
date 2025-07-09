@@ -2,13 +2,16 @@
 O projeto mais completo: exibe produtos, permite adicionar ao carrinho e finalizar a compra. Tudo
 no terminal, simulando um e-commerce. Trabalha organização de dados, lógica condicional e
 menus encadeados."""
+#Importações essenciais para o front-end e o back-end com banco de dados
 import pyfiglet
+import emoji
 from rich.console import Console
 from tabulate import tabulate
 from colorama import init, Fore, Style
 init(autoreset=True)
 import mysql.connector
 
+#Parte essencial para conectar meu código com o Banco
 conexao = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -17,12 +20,14 @@ conexao = mysql.connector.connect(
 )
 
 
-##console = Console()
+#Exibe um titulo bonito
 print(pyfiglet.figlet_format("Lojinha do Ze"))
-##console.rule("[bold magenta]MINHA LOJA[/bold magenta]")
 
 
+#Parte que cria a ferramenta que o Python usa para conversar com o banco de dados. Sem isso, nada funciona.
 cursor = conexao.cursor() 
+
+#Seleciona todos os dados dos produtos e exibe de maneira visualmente bonita
 cursor.execute("SELECT * FROM produtos")
 resultados = cursor.fetchall()
 for linha in resultados:
@@ -33,22 +38,48 @@ for linha in resultados:
 ]
     print(tabulate([linha], headers=headers, tablefmt="fancy_grid"))
 
-
+#Essa parte do codigo, pega todos os ids do banco, e coloca numa lista na variavel idsDisponiveis.
+#E verifica no banco, se existir o produto, ele é adicionado ao carrinnho.
 cursor.execute("SELECT id_produto FROM produtos")
-idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  #Essa linha de cod, pega todos os ids do banco, e coloca numa lista na variavel idsDisponiveis
-
+idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  
 produto = int(input("Escolha o poduto de acordo com ID ou feche clicando ENTER: "))
 if produto in idsDisponiveis:
-   print("Produto Adicionado ao carrinho")
-   continuar = input("Você está quase lá, deseja continuar a compra(s/n)? ")
-   if continuar == "s":
+   print(Fore.MAGENTA + "------------> Produto Adicionado ao carrinho <------------")
+   
+   #Essa parte é do cadastro, funciona da mesma maneira, ela pega os nomes do banco e armazena.
+   #E no códgio o usuario verifica o nome dele, se o nome dele não estiver cadastrado, o cod pula para a parte do cadastro e manda pro banco os dados
+   cursor.execute("SELECT nome from clientes")
+   nomesCadastrados = [linha[0].strip().lower() for linha in cursor.fetchall()]
+   confirmacaoCadastro = input(Fore.CYAN + "VOCÊ TEM CADASTRO NA LOJA DO ZE?(s/n): ").strip().lower()
+   if confirmacaoCadastro == "s" or confirmacaoCadastro == "sim":
+       confirmacaoNome = input("DIGITE SEU NOME CADASTRADO: ").strip().lower()
+       if confirmacaoNome in nomesCadastrados:
+           print(emoji.emojize(Fore.GREEN + "VOCÊ ESTÁ CADASTRADO :smiley:, BOA COMPRA", language='alias')) #Com Adição de Emoji
+   else:
+        print(emoji.emojize(Fore.YELLOW + "VOCÊ AINDA NÃO TEM CADASTRO :cry:, CADASTRE-SE ABAIXO :smiley: ", language='alias'))
+        nomeDoCliente = input("DIGITE SEU NOME: ")
+        rua = input("DIGITE SUA RUA: ")
+        numeroCasa = input("DIGITE O NÚMERO DA CASA: ")
+        telefone = input("DIGITE SEU TELEFONE: ")
+        cursor.execute("INSERT INTO clientes(nome, rua, numerodacasa, telefone) VALUES(%s, %s, %s, %s)", (nomeDoCliente, rua, numeroCasa, telefone,))
+        conexao.commit()
+
+   #Parte do código que simula a compra, não tem banco para isso, pois esses dados não podem ser registrados
+   numerodocartao = int(input("DIGITE O NÚMERO DO SEU CARTÃO: "))
+   dataExpiracao = int(input("DIGITE A DATA DE EXPIRAÇÃO DO CARTÃO: "))
+   codSeguranca = int(input("DIGITE O CÓDIGO DE SEGURANÇA DO CARTÃO: "))
+
+  #Parte final do código, se o usuario realmente querer finaliar a compra, o registro de venda é mandado para
+  #a tabela vendas, caso contrario cancela a compra e nada é de fato registrado no banco
+   continuar = input("Você está quase lá, deseja finalizar a compra(s/n)? ").strip().lower()
+   if continuar == "s" or continuar == "sim" or continuar == "yes":
        cursor.execute('INSERT INTO vendas(id_produto) values(%s)', (produto,))
        conexao.commit()
-       print(Fore.GREEN + "COMPRA REALIZADA COM SUCESSO")
+       print(Fore.GREEN + "------------> COMPRA REALIZADA COM SUCESSO <------------")
    else:
-       print(Fore.RED + "COMPRA CANCELADO")
+       print(Fore.RED + "------------> COMPRA CANCELADA <------------")
 else:
-    print(Fore.YELLOW + "PRODUTO NÃO EXISTE")
+    print(Fore.YELLOW + "------------> PRODUTO NÃO EXISTE <------------")
 
        
        

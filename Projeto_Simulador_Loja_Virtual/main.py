@@ -25,7 +25,7 @@ print(pyfiglet.figlet_format("Lojinha do Ze"))
 
 
 #Parte que cria a ferramenta que o Python usa para conversar com o banco de dados. Sem isso, nada funciona.
-cursor = conexao.cursor() 
+cursor = conexao.cursor()  #conexao.cursor().execute
 
 #Seleciona todos os dados dos produtos e exibe de maneira visualmente bonita
 cursor.execute("SELECT * FROM produtos")

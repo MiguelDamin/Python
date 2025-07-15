@@ -40,6 +40,7 @@ for linha in resultados:
 
 #Essa parte do codigo, pega todos os ids do banco, e coloca numa lista na variavel idsDisponiveis.
 #E verifica no banco, se existir o produto, ele é adicionado ao carrinnho.
+
 cursor.execute("SELECT id_produto FROM produtos")
 idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  
 produto = int(input("Escolha o poduto de acordo com ID ou feche clicando ENTER: "))

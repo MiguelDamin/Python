@@ -38,12 +38,13 @@ for linha in resultados:
 ]
     print(tabulate([linha], headers=headers, tablefmt="fancy_grid"))
 
+produtosEscolhidos = []
 #Essa parte do codigo, pega todos os ids do banco, e coloca numa lista na variavel idsDisponiveis.
 #E verifica no banco, se existir o produto, ele é adicionado ao carrinnho.
 
 cursor.execute("SELECT id_produto FROM produtos")
 idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  
-produto = int(input("Escolha o poduto de acordo com ID ou feche clicando ENTER: "))
+produto = int(input("Escolha o produto de acordo com ID ou feche clicando ENTER: "))
 if produto in idsDisponiveis:
    print(Fore.MAGENTA + "------------> Produto Adicionado ao carrinho <------------")
    
@@ -112,7 +113,35 @@ if produto in idsDisponiveis:
        conexao.commit()
        print(Fore.GREEN + "------------> COMPRA REALIZADA COM SUCESSO <------------")
    else:
-       print(Fore.RED + "------------> COMPRA CANCELADA <------------")
+       while True:
+         cursor.execute("SELECT * FROM produtos")
+         resultados = cursor.fetchall()
+         for linha in resultados:
+                headers = [
+                   f"{Fore.GREEN}ID{Style.RESET_ALL}",
+                   f"{Fore.MAGENTA}Nome{Style.RESET_ALL}",
+                   f"{Fore.CYAN}Preço (R$){Style.RESET_ALL}"
+                ]
+                print(tabulate([linha], headers=headers, tablefmt="fancy_grid"))
+         cursor.execute("SELECT id_produto FROM produtos")
+         idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  
+         produto2 = int(input(Fore.CYAN + "Escolha o produto de acordo com ID ou feche clicando ENTER: "))
+         if produto2 in idsDisponiveis:
+            print(Fore.MAGENTA + "------------> Produto Adicionado ao carrinho <------------")
+            produtosEscolhidos.append(produto2)
+            finalizar = input(Fore.BLUE  + "Deseja finalizar a compra(s/n)? ").strip().lower()
+            if finalizar == "s" or finalizar == "sim":
+                cursor.execute('INSERT INTO vendas(id_produto) values(%s)', (produto,))
+                cursor.executemany('INSERT INTO vendas(id_produto) VALUES (%s)', [(id,) for id in produtosEscolhidos])
+                conexao.commit()
+                print(Fore.GREEN + "------------> COMPRA REALIZADA COM SUCESSO <------------")
+                break
+            else:
+                continue
+         else:
+             ("PRODUTO NÃO EXISTE")
+             
+
 else:
     print(Fore.YELLOW + "------------> PRODUTO NÃO EXISTE <------------")
 

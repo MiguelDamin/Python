@@ -28,25 +28,50 @@ print(pyfiglet.figlet_format("Lojinha do Ze"))
 cursor = conexao.cursor()  #conexao.cursor().execute
 
 #Seleciona todos os dados dos produtos e exibe de maneira visualmente bonita
-cursor.execute("SELECT * FROM produtos")
-resultados = cursor.fetchall()
-for linha in resultados:
-    headers = [
-    f"{Fore.GREEN}ID{Style.RESET_ALL}",
-    f"{Fore.MAGENTA}Nome{Style.RESET_ALL}",
-    f"{Fore.CYAN}Preço (R$){Style.RESET_ALL}"
-]
-    print(tabulate([linha], headers=headers, tablefmt="fancy_grid"))
+def selecionar_all_produtos():
+  cursor.execute("SELECT * FROM produtos")
+  resultados = cursor.fetchall()
+  for linha in resultados:
+     headers = [
+     f"{Fore.GREEN}ID{Style.RESET_ALL}",
+     f"{Fore.MAGENTA}Nome{Style.RESET_ALL}",
+     f"{Fore.CYAN}Preço (R$){Style.RESET_ALL}"
+      ]
+     print(tabulate([linha], headers=headers, tablefmt="fancy_grid"))
+
+selecionar_all_produtos()
 
 produtosEscolhidos = []
+
 #Essa parte do codigo, pega todos os ids do banco, e coloca numa lista na variavel idsDisponiveis.
 #E verifica no banco, se existir o produto, ele é adicionado ao carrinnho.
-
 cursor.execute("SELECT id_produto FROM produtos")
 idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  
-produto = int(input("Escolha o produto de acordo com ID ou feche clicando ENTER: "))
+def obter_id_produto():
+ while True:
+    entrada = input("\nEscolha o produto de acordo com ID ou feche clicando ENTER: ")
+
+    if entrada == "":
+        print(Fore.MAGENTA + "Encerrando...")
+        return ""
+
+    if not entrada.isdigit():
+        print(Fore.RED + "Erro: Digite apenas números, letras não são permitidas")
+        continue
+
+    produto = int(entrada)
+
+    if produto not in range(1, 5):  # vai de 1 a 3
+        print(emoji.emojize(Fore.RED + ":warning:  ATENÇÃO :warning:  --> ESCREVA O ID DE 1 A 4", language='alias'))
+        continue
+
+    print(Fore.GREEN + f"ID {produto} aceito.")
+    return produto
+
+produto = obter_id_produto()
+
 if produto in idsDisponiveis:
-   print(Fore.MAGENTA + "------------> Produto Adicionado ao carrinho <------------")
+   print(Fore.MAGENTA + "------------> Produto Adicionado ao carrinho <------------\n")
    
    #Essa parte é do cadastro, funciona da mesma maneira, ela pega os nomes do banco e armazena.
    #E no códgio o usuario verifica o nome dele, se o nome dele não estiver cadastrado, o cod pula para a parte do cadastro e manda pro banco os dados
@@ -54,9 +79,17 @@ if produto in idsDisponiveis:
    nomesCadastrados = [linha[0].strip().lower() for linha in cursor.fetchall()]
    while True:
        confirmacaoCadastro = input(Fore.CYAN + "VOCÊ TEM CADASTRO NA LOJA DO ZE?(s/n): ").strip().lower()
-       if all(parte.isalpha() for parte in confirmacaoCadastro.split()):
-           break
-       print(Fore.YELLOW + "Erro: Confirme com (s) para SIM e (n) para não, não use números")
+
+       if confirmacaoCadastro.isdigit():
+           print(Fore.YELLOW + "Erro: Confirme com (s) para SIM e (n) para não, não use números")
+           continue
+       if confirmacaoCadastro in ["sim", "s", "n", "não"]:
+         break
+       else:
+          continue
+   
+      
+
    if confirmacaoCadastro == "s" or confirmacaoCadastro == "sim":
        while True:
            confirmacaoNome = input("DIGITE SEU NOME CADASTRADO: ").strip().lower()
@@ -65,13 +98,13 @@ if produto in idsDisponiveis:
            else:
               print("Seu nome deve ser escrito por letras, não números. Seu animal")
        if confirmacaoNome in nomesCadastrados:
-           print(emoji.emojize(Fore.GREEN + "VOCÊ ESTÁ CADASTRADO :smiley:, BOA COMPRA", language='alias')) #Com Adição de Emoji
+           print(emoji.emojize(Fore.GREEN + "\nVOCÊ ESTÁ CADASTRADO :smiley:, BOA COMPRA\n", language='alias')) #Com Adição de Emoji
            #Parte do código que simula a compra, não tem banco para isso, pois esses dados não podem ser registrados
            print(Fore.YELLOW + "INICIANDO PAGAMENTO...")
            numerodocartao = int(input(Fore.LIGHTBLUE_EX + "DIGITE O NÚMERO DO SEU CARTÃO: "))
            dataExpiracao = int(input(Fore.LIGHTBLUE_EX + "DIGITE A DATA DE EXPIRAÇÃO DO CARTÃO: "))
            codSeguranca = int(input(Fore.LIGHTBLUE_EX + "DIGITE O CÓDIGO DE SEGURANÇA DO CARTÃO: "))
-   else:
+   elif confirmacaoCadastro == "n" or confirmacaoCadastro == "não":
         print(emoji.emojize(Fore.YELLOW + "VOCÊ AINDA NÃO TEM CADASTRO :cry:, CADASTRE-SE ABAIXO :smiley: ", language='alias'))
         while True:
            nomeDoCliente = input(Fore.LIGHTGREEN_EX + "DIGITE SEU NOME: ")
@@ -88,6 +121,7 @@ if produto in idsDisponiveis:
            if numeroCasa.isdigit():
                break
            print(Fore.RED + "Erro: Digite números, sem letras ou símbolos") 
+        
            
         while True:
           telefone = input(Fore.LIGHTGREEN_EX + "DIGITE SEU TELEFONE: ")
@@ -107,29 +141,22 @@ if produto in idsDisponiveis:
 
   #Parte final do código, se o usuario realmente querer finaliar a compra, o registro de venda é mandado para
   #a tabela vendas, caso contrario cancela a compra e nada é de fato registrado no banco
-   continuar = input("Você está quase lá, deseja finalizar a compra(s/n)? ").strip().lower()
+   continuar = input(f"\n\n{Style.RESET_ALL}Você está quase lá, deseja finalizar a compra(s/n)?{Style.RESET_ALL} ").strip().lower()
    if continuar == "s" or continuar == "sim" or continuar == "yes":
        cursor.execute('INSERT INTO vendas(id_produto) values(%s)', (produto,))
        conexao.commit()
        print(Fore.GREEN + "------------> COMPRA REALIZADA COM SUCESSO <------------")
    else:
        while True:
-         cursor.execute("SELECT * FROM produtos")
-         resultados = cursor.fetchall()
-         for linha in resultados:
-                headers = [
-                   f"{Fore.GREEN}ID{Style.RESET_ALL}",
-                   f"{Fore.MAGENTA}Nome{Style.RESET_ALL}",
-                   f"{Fore.CYAN}Preço (R$){Style.RESET_ALL}"
-                ]
-                print(tabulate([linha], headers=headers, tablefmt="fancy_grid"))
+         selecionar_all_produtos()
          cursor.execute("SELECT id_produto FROM produtos")
          idsDisponiveis = [linha[0] for linha in cursor.fetchall()]  
-         produto2 = int(input(Fore.CYAN + "Escolha o produto de acordo com ID ou feche clicando ENTER: "))
+         produto2 = obter_id_produto()
+         
          if produto2 in idsDisponiveis:
             print(Fore.MAGENTA + "------------> Produto Adicionado ao carrinho <------------")
             produtosEscolhidos.append(produto2)
-            finalizar = input(Fore.BLUE  + "Deseja finalizar a compra(s/n)? ").strip().lower()
+            finalizar = input(Fore.BLUE  + f"Deseja finalizar a compra(s/n)? {Style.RESET_ALL}").strip().lower()
             if finalizar == "s" or finalizar == "sim":
                 cursor.execute('INSERT INTO vendas(id_produto) values(%s)', (produto,))
                 cursor.executemany('INSERT INTO vendas(id_produto) VALUES (%s)', [(id,) for id in produtosEscolhidos])
@@ -138,12 +165,16 @@ if produto in idsDisponiveis:
                 break
             else:
                 continue
+         elif produto2 == "":
+            print(Fore.YELLOW+"Nenhum produto extra adicionado")
+            cursor.execute('INSERT INTO vendas(id_produto) values(%s)', (produto,))
+            cursor.executemany('INSERT INTO vendas(id_produto) VALUES (%s)', [(id,) for id in produtosEscolhidos])
+            conexao.commit()
+            break
+
          else:
              ("PRODUTO NÃO EXISTE")
-             
 
-else:
-    print(Fore.YELLOW + "------------> PRODUTO NÃO EXISTE <------------")
 
        
        
